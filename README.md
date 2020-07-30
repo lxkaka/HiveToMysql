@@ -6,6 +6,7 @@ This project is developed for data synchronization between Hive(ORC format data)
 * parse ORC file and write to Mysql
 * sync tasks scheduled by airflow
 * totally support kubernetes deploy
+* task log write to remote(Aliyun OSS)
 
 ## Workflow
 ![workflow](https://pics.lxkaka.wang/oss_sync_flow.png)
