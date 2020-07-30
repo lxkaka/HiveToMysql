@@ -1,0 +1,14 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: airflow
+  namespace: airflow
+spec:
+  rules:
+    - host: airflow-inter.{HOST}.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: airflow
+              servicePort: 80

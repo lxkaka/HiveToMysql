@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: airflow
+  name: airflow
+  labels:
+      app: airflow
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  selector:
+    app: airflow-web
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: airflow
+  name: airflow-web
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: airflow-web
+  strategy:
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 50%
+  template:
+    metadata:
+      labels:
+        app: airflow-web
+    spec:
+      containers:
+        - name: airflow-web
+          command: ["airflow"]
+          args: ["webserver"]
+          ports:
+          - containerPort: 8080
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 100m
+              memory: 1000Mi
+            limits:
+              cpu: 1000m
+              memory: 1500Mi
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 2
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 2
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: airflow
+  name: airflow-scheduler
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: airflow-scheduler
+  strategy:
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 50%
+  template:
+    metadata:
+      labels:
+        app: airflow-scheduler
+    spec:
+      containers:
+        - name: airflow-scheduler
+          command: ["airflow"]
+          args: ["scheduler"]
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 200m
+              memory: 300Mi
+            limits:
+             cpu: 1000m
+             memory: 600Mi

@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: airflow
+  name: airflow-web
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+         - name: airflow-web
+           image: airlfow/test/code:latest
+           resources:
+             requests:
+               cpu: 90m
+               memory: 900Mi
+             limits:
+               cpu: 1000m
+               memory: 1500M

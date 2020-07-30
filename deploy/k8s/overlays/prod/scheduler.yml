@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: airflow
+  name: airflow-scheduler
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+         - name: airflow-scheduler
+           image: airlfow/test/code:latest
+           resources:
+            requests:
+              cpu: 200m
+              memory: 300Mi
+            limits:
+             cpu: 1000m
+             memory: 600Mi

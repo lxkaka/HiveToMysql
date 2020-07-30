@@ -1,0 +1,18 @@
+version: "2"
+
+services:
+  airflow-webserver:
+    image: airflow:test
+    command: airflow webserver
+    ports:
+    - 8080:8080
+
+  airflow-scheduler:
+    image: airflow:test
+    command: airflow scheduler
+
+#  airflow-worker:
+#    image: airflow:test
+#    command: airflow worker
+#    environment:
+#      C_FORCE_ROOT: "true"

@@ -1,0 +1,77 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  REPOSITORY: git@github.com/lxkaka/HiveToMysql.git
+  BASE_DOCKER: your docker registry addr
+  PROJECT: airlfow
+  NAME_SPACE: airflow
+  VERSION: $CI_PIPELINE_ID
+  ENV: test
+
+.build:
+  image: docker:compose
+  stage: build
+  script:
+    - >
+      echo "$PROJECT start build $ENV:$VERSION =============>";
+      IMAGE_BASE=${BASE_DOCKER}/${PROJECT}/${ENV}/code;
+      IMAGE_URL=${BASE_DOCKER}/${PROJECT}/${ENV}/code:${VERSION};
+      sed -i s~{IMAGE_BASE}~${IMAGE_BASE}~g deploy/${ENV}/airflow.cfg;
+      sed -i s~{VERSION}~${VERSION}~g deploy/${ENV}/airflow.cfg;
+
+      docker build --pull -t ${IMAGE_URL} --build-arg ENV=${ENV} -f deploy/docker/code.Dockerfile .;
+      docker push ${IMAGE_URL};
+
+      echo "build process done ==========";
+
+build test:
+  extends: .build
+  only:
+    - dev@be/inf/sync
+    - deploy@be/inf/sync
+
+
+.deploy:
+  stage: deploy
+  image: kustomize:v1.1
+  before_script:
+    - mkdir ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "${DEPLOY_KEY}" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - git remote set-url origin ${REPOSITORY}
+    - git config user.email ${GITLAB_USER_EMAIL}
+    - git config user.name ${GITLAB_USER_NAME}
+  script:
+    - cd deploy/k8s/overlays/${ENV}
+    - kustomize edit set image ${BASE_DOCKER}/${PROJECT}/${ENV}/code:${VERSION}
+    - git add .
+    - git commit -m '[skip ci]update image'
+    - git push origin HEAD:${CI_COMMIT_REF_NAME} -f
+
+deploy test:
+  extends: .deploy
+  only:
+    - dev@HiveToMysql
+  variables:
+    HOST: example-test
+
+
+build prod:
+  extends: .build
+  only:
+    - master@HiveToMysql
+  variables:
+    ENV: prod
+
+deploy prod:
+  extends: .deploy
+  only:
+    - master@HiveToMysql
+  variables:
+    HOST: examole-prod
+    ENV: prod
+  when: manual
