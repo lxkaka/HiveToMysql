@@ -234,7 +234,8 @@ class Sync:
 
 
 def data_frame_to_mysql(df, table):
-    engine = create_engine(f"mysql+pymysql://zaihui:0P9Tpsho@am-uf60bjp7m8102kdyn131910.ads.aliyuncs.com/dm")
+    des = Variable.get("Destination")
+    engine = create_engine(f"mysql+pymysql://{des}")
     df.to_sql(con=engine, name=table, if_exists='append', index=False)
 
 

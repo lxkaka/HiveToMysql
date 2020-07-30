@@ -9,7 +9,7 @@ spec:
     spec:
       containers:
          - name: airflow-scheduler
-           image: airlfow/test/code:latest
+           image: airlfow/prod/code:latest
            resources:
             requests:
               cpu: 200m
